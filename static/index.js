@@ -41,7 +41,67 @@ cameraTrigger.onclick = function() {
                 })
                 $.post("/upload", {
                     "image": event.target.result
-                }, function( data) {            });
+                }, function( data) {
+                    console.log(data)
+                    $('form').jsonForm({
+                        schema: {
+                          "company": {
+                            type: 'string',
+                            title: 'Company',
+                          },
+                          "address": {
+                            type: 'string',
+                            title: 'Address'
+                          },
+                          "items": {
+                            type: 'array',
+                            title: 'Items',
+                            items: {
+                                type: "object",
+                                title: "Item",
+                                properties: {
+                                    "name": {
+                                        type: "string",
+                                        title: "Item Name"
+                                    },
+                                    "qty": {
+                                        type: "string",
+                                        title: "Item Quantiy"
+                                    },
+                                    "unit_price": {
+                                        type: "number",
+                                        title: "Unit price"
+                                    },
+                                    "price": {
+                                        type: "number",
+                                        title: "Item price"
+                                    }
+                                }
+                            }
+                          },
+                          "total": {
+                            type: 'number',
+                            title: 'Total'
+                          },
+                          "date": {
+                            type: 'datetime',
+                            title: 'Date'
+                          }
+                        },
+                        onSubmit: function (errors, values) {
+                          if (errors) {
+                            $('#res').html('<p>I beg your pardon?</p>');
+                          }
+                          else {
+                            $('#res').html('<p>Hello ' + values.name + '.' +
+                              (values.age ? '<br/>You are ' + values.age + '.' : '') +
+                              '</p>');
+                          }
+                        },
+                        value: data
+                      });
+
+                });
                 }
             reader.readAsDataURL(blob);//Convert the blob from clipboard to base64
 
@@ -54,27 +114,5 @@ cameraTrigger.onclick = function() {
 window.addEventListener("load", cameraStart, false);
 
 $(function() {
-    $('form').jsonForm({
-            schema: {
-              name: {
-                type: 'string',
-                title: 'Name',
-                required: true
-              },
-              age: {
-                type: 'number',
-                title: 'Age'
-              }
-            },
-            onSubmit: function (errors, values) {
-              if (errors) {
-                $('#res').html('<p>I beg your pardon?</p>');
-              }
-              else {
-                $('#res').html('<p>Hello ' + values.name + '.' +
-                  (values.age ? '<br/>You are ' + values.age + '.' : '') +
-                  '</p>');
-              }
-            }
-          });
+
 })
