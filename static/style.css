@@ -5,18 +5,28 @@ html, body{
   width: 100%;
 }
 
-#camera, #camera--view, #camera--sensor, #camera--output{
+/* #camera, #camera--view, #camera--sensor, #camera--output{
     position: fixed;
     height: 100%;
     width: 100%;
     object-fit: cover;
-}
+}*/
 
 #camera--view, #camera--sensor, #camera--output{
     transform: scaleX(-1);
     filter: FlipH;
 }
 
+.camera_image {
+    display: inline-block;
+    position: relative;
+}
+
+.remove {
+    position: absolute;
+    top: 2px;
+    left: 2px;
+}
 #camera--trigger{
     width: 200px;
     background-color: black;
