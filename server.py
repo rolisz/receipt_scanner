@@ -1,15 +1,20 @@
 import base64
 import os
+import io
 import re
 import sqlite3
 from io import BytesIO
 
 from PIL import Image
 from flask import Flask, render_template, request, g, jsonify
+from google.cloud import vision
+from google.cloud.vision import types
 
 from utils import get_fake_json, get_error, get_random_filename
 
 DATABASE = './receipts.db'
+
+client = vision.ImageAnnotatorClient()
 
 app = Flask(__name__)
 
@@ -95,11 +100,19 @@ def upload_photo():
             # insert into DB
             persist_results(data)
 
+            with io.open(filename, 'rb') as image_file:
+                content = image_file.read()
+
+            image = types.Image(content=content)
+
+            # Performs label detection on the image file
+            response = client.text_detection(image=image)
+            print(response.text_annotations[0].description)
+
             return jsonify(data), 200
         except Exception as e:
             app.logger.error(e)
             return jsonify(get_error('invalid image')), 500
 
-
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(host="0.0.0.0", debug=True)

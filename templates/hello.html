@@ -8,27 +8,29 @@
 
 		<!-- Link to main style sheet -->
 		<link rel="stylesheet" href="static/style.css">
+		<link rel="stylesheet" href="static/bootstrap.css">
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+        <script src="/static/underscore-min.js"></script>
+        <script src="/static/jsonform.js"></script>
+
 	</head>
 	<body>
 
 		<!-- Camera -->
 		<main id="camera">
-
-		    <!-- Camera sensor -->
-		    <canvas id="camera--sensor"></canvas>
-
 		    <!-- Camera view -->
 		    <video id="camera--view" autoplay playsinline></video>
 
 		    <!-- Camera output -->
-		    <img src="//:0" alt="" id="camera--output">
-
+            <div id="camera--output"></div>
 		    <!-- Camera trigger -->
 		    <button id="camera--trigger">Take a picture</button>
 
 		</main>
 
+        <form>
+
+        </form>
 		<!-- Reference to your JavaScript file -->
 		<script src="static/index.js"></script>
 
