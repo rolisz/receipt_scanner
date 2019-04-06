@@ -80,7 +80,6 @@ def hello_world():
     return render_template('hello.html')
 
 
-<<<<<<< HEAD
 def get_fake_json():
     content = {
         'id': 1,
