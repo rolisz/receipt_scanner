@@ -1,10 +1,17 @@
 import base64
+import io
 import re
 from io import BytesIO
 import logging
 
 from flask import Flask, render_template, request, json, jsonify
 from PIL import Image
+
+from google.cloud import vision
+from google.cloud.vision import types
+
+client = vision.ImageAnnotatorClient()
+
 
 app = Flask(__name__)
 
@@ -58,15 +65,21 @@ def upload_photo():
 
         buffer = BytesIO(base64.b64decode(image_data))
 
-        try:
-            im = Image.open(buffer, 'r')
-            im.verify()
+        im = Image.open(buffer, 'r')
+        b = BytesIO()
+        im.save(open("image.jpeg", "wb"))
 
-            return get_fake_json(), 200
-        except Exception as e:
-            logging.error('invalid image', e)
-            return get_error('invalid image'),
+        with io.open("image.jpeg", 'rb') as image_file:
+            content = image_file.read()
+
+        # im.verify()
+        image = types.Image(content=content)
+        #context = types.ImageContext(language_hints="ro")
+        # Performs label detection on the image file
+        response = client.text_detection(image=image)
+        print(response.text_annotations[0].description)
+        return get_fake_json(), 200
 
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(host="0.0.0.0", debug=True)
