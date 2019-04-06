@@ -23,6 +23,7 @@ def hello_world():
 
 def get_fake_json():
     content = {
+        'id': 1,
         'company': 'SC DEDEMAN SRL',
         'address': 'Calea Aradului NR 87A JUD BIHOR',
         'items': [
@@ -77,7 +78,8 @@ def upload_photo():
         #context = types.ImageContext(language_hints="ro")
         # Performs label detection on the image file
         response = client.text_detection(image=image)
-        print(response.text_annotations[0].description)
+        if len(response.text_annotations):
+            print(response.text_annotations[0].description)
         return get_fake_json(), 200
 
 

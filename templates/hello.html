@@ -12,25 +12,23 @@
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
         <script src="/static/underscore-min.js"></script>
         <script src="/static/jsonform.js"></script>
+        <script src="/static/bootstrap.min.js"></script>
+
 
 	</head>
 	<body>
 
 		<!-- Camera -->
 		<main id="camera">
-		    <!-- Camera view -->
-		    <video id="camera--view" autoplay playsinline></video>
-
-		    <!-- Camera output -->
-            <div id="camera--output"></div>
-		    <!-- Camera trigger -->
-		    <button id="camera--trigger">Take a picture</button>
-
+			<div class="camera_input">
+		    <input type="file" accept="image/*" id="capture" capture="camera">
+			<label for="capture" class="trigger">Take a pic</label>
+			</div>
+			<div id="cameraOutput"></div>
 		</main>
 
-        <form>
-
-        </form>
+        <div class="container" id="results" class="">
+        </div>
 		<!-- Reference to your JavaScript file -->
 		<script src="static/index.js"></script>
 

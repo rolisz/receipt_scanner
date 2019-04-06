@@ -5,16 +5,45 @@ html, body{
   width: 100%;
 }
 
-/* #camera, #camera--view, #camera--sensor, #camera--output{
-    position: fixed;
-    height: 100%;
-    width: 100%;
-    object-fit: cover;
-}*/
+[type="file"] {
+  border: 0;
+  clip: rect(0, 0, 0, 0);
+  height: 1px;
+  overflow: hidden;
+  padding: 0;
+  position: absolute !important;
+  white-space: nowrap;
+  width: 1px;
+}
 
-#camera--view, #camera--sensor, #camera--output{
-    transform: scaleX(-1);
-    filter: FlipH;
+[type="file"] + label {
+  background-color: #000;
+  border-radius: 4rem;
+  color: #fff;
+  cursor: pointer;
+  display: inline-block;
+  font-family: 'Poppins', sans-serif;
+  font-size: 1rem;
+  font-weight: 700;
+  height: 4rem;
+  line-height: 4rem;
+  padding-left: 2rem;
+  padding-right: 2rem;
+  transition: background-color 0.3s;
+}
+
+[type="file"]:focus + label,
+[type="file"] + label:hover {
+    background-color: #f15d22;
+}
+
+[type="file"]:focus + label {
+  outline: 1px dotted #000;
+  outline: -webkit-focus-ring-color auto 5px;
+}
+
+#camera--output{
+    position:
 }
 
 .camera_image {
@@ -22,24 +51,27 @@ html, body{
     position: relative;
 }
 
+#camera {
+    padding-top:10px;
+}
+.camera_input {
+    width: 100px;
+    margin: 0 auto;R
+}
 .remove {
     position: absolute;
-    top: 2px;
-    left: 2px;
-}
-#camera--trigger{
-    width: 200px;
-    background-color: black;
-    color: white;
-    font-size: 16px;
-    border-radius: 30px;
-    border: none;
-    padding: 15px 20px;
+    top: -5px;
+    right: -5px;
+    border-radius: 26px 26px 26px 26px;
+    -moz-border-radius: 26px 26px 26px 26px;
+    -webkit-border-radius: 26px 26px 26px 26px;
+    border: 1px solid #000000;
+    background-color: #ff5757;
+    font-size: small;
     text-align: center;
-    box-shadow: 0 5px 10px 0 rgba(0,0,0,0.2);
-    position: fixed;
-    bottom: 30px;
-    left: calc(50% - 100px);
+    width: 20px;
+    height: 20px;
+    z-index: 2;
 }
 
 .taken{
