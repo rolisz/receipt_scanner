@@ -1,20 +1,26 @@
 import base64
 import os
-import io
 import re
 import sqlite3
 from io import BytesIO
 
+import requests
 from PIL import Image
 from flask import Flask, render_template, request, g, jsonify
-from google.cloud import vision
-from google.cloud.vision import types
 
 from utils import get_fake_json, get_error, get_random_filename
 
 DATABASE = './receipts.db'
 
-client = vision.ImageAnnotatorClient()
+# subscription_key = os.environ['AZURE_VISION_KEY']
+subscription_key = '33b879eb6d2b41d39dce004882a63df5'
+
+VISION_URL = "https://westcentralus.api.cognitive.microsoft.com/vision/v2.0/ocr"
+VISION_HEADERS = {
+    'Ocp-Apim-Subscription-Key': subscription_key,
+    'Content-Type': 'application/octet-stream'
+}
+params = {'detectOrientation': 'true'}
 
 app = Flask(__name__)
 
@@ -75,6 +81,12 @@ def persist_results(receipt_data):
     db.commit()
 
 
+def parse_vision_response(gvision_response):
+    print(gvision_response)
+
+    return get_fake_json()
+
+
 @app.route('/')
 def hello_world():
     return render_template('hello.html')
@@ -94,25 +106,22 @@ def upload_photo():
             app.logger.info('saving image to ' + filename)
             im.save('pictures/' + filename)
 
-            # here we make a call to google vision API
-            data = get_fake_json()
+            # here we make a call to azure vision API
+            response = requests.post(VISION_URL, headers=VISION_HEADERS, params=params, data=buffer.getvalue())
+            response.raise_for_status()
+
+            analysis = response.json()
+
+            data = parse_vision_response(analysis)
 
             # insert into DB
             persist_results(data)
-
-            with io.open(filename, 'rb') as image_file:
-                content = image_file.read()
-
-            image = types.Image(content=content)
-
-            # Performs label detection on the image file
-            response = client.text_detection(image=image)
-            print(response.text_annotations[0].description)
 
             return jsonify(data), 200
         except Exception as e:
             app.logger.error(e)
             return jsonify(get_error('invalid image')), 500
+
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", debug=True)
