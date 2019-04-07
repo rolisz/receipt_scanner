@@ -231,6 +231,7 @@ def pipeline(path):
 
 
 def get_word_items(words):
+    print(words)
     is_header = True
     items = []
     prices = []
