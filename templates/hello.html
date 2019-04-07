@@ -14,8 +14,11 @@
         <script src="/static/underscore-min.js"></script>
         <script src="/static/jsonform.js"></script>
         <script src="/static/bootstrap.min.js"></script>
-
+		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.8.0/Chart.min.css" />
 		<script src="static/viewer.js"></script>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.8.0/Chart.bundle.min.js"></script>
+		<script src="http://js.api.here.com/v3/3.0/mapsjs-core.js" type="text/javascript" charset="utf-8"></script>
+		<script src="http://js.api.here.com/v3/3.0/mapsjs-service.js"  type="text/javascript" charset="utf-8"></script>
 	</head>
 	<body>
 
@@ -36,6 +39,8 @@
 
         </div>
 
+			<canvas id="myChart" width="400" height="400"></canvas>
+			<div id="mapContainer"></div>
 		</div>
 
 		<!-- Reference to your JavaScript file -->

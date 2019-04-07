@@ -236,10 +236,9 @@ def get_word_items(words):
     prices = []
 
     header_max = 0
-    for i, word in enumerate(words[:9]):
+    for i, word in enumerate(words[:10]):
         joined = " ".join(word).lower()
-        if "c.i.f" in joined or "bon" in joined or "fiscal" in joined or "str " in joined or\
-            "bine ati venit" in joined:
+        if "c.i.f" in joined or "bon" in joined or "fiscal" in joined or "str " in joined or "venit" in joined:
             header_max = max(header_max, i)
 
     company = ""
@@ -254,7 +253,8 @@ def get_word_items(words):
     end_min = len(words)
     for i, word in enumerate(words):
         joined = " ".join(word).lower()
-        if "total" in joined or "poziti" in joined or "tva" in joined or "numerar" in joined:
+        if "total" in joined or "poziti" in joined or "tva" in joined or "numerar" in joined\
+            or "end elemente" in joined:
             end_min = min(end_min, i)
 
     data = datetime.date.today().strftime("%Y/%m/%d")
@@ -286,9 +286,9 @@ def get_word_items(words):
             if "kg" in joined and len(joined) < 4:
                 continue
             items.append(joined)
-            next_rows = sum(words[i + 1 + header_max + 1:i + 3 + header_max + 1], [])
+            next_rows = [x.replace(",", ".") for x in sum(words[i + 1 + header_max + 1:i + 3 + header_max + 1], [])]
             print(joined, next_rows)
-            nrs = [float(x) for x in next_rows if is_float(x)]
+            nrs = [float(x) for x in next_rows if is_float(x) and float(x) < 400]
             if nrs:
                 price = max(nrs)
             else:

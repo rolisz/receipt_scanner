@@ -45,6 +45,7 @@ function error(error)
 
 function showResults(data) {
     console.log(data)
+    $('#results').empty()
     $(document.createElement('form')).appendTo($('#results'))
         .addClass('panel').jsonForm({
         schema: schema,
@@ -59,7 +60,9 @@ function showResults(data) {
             console.log(values)
             $.post('/save', {
                 values
-            })
+            });
+            $('#results').empty();
+            load_receipts();
         },
         value: data
     })
@@ -77,17 +80,45 @@ $(function() {
                 img.children('.remove').on('click', function(self) {
                     $(this).parent().remove()
                 })
+                img.on('click', function() {
+                    showResults($(this).data("values"))
+                })
                 $.post("/upload", {
                     "image": event.target.result
-                }, showResults);
+                }, function(data) {
+                    console.log(data)
+                    console.log(img)
+                    img.data("values", data);
+                    showResults(data)
+                });
 
             };
             reader.readAsDataURL(v);
         })
 	})
 
+    load_receipts()
+})
+var info;
+function load_receipts() {
     $.get('/get_receipts', function(data) {
         console.log(data)
         $("#inner_tbl").html(buildTable(data));
+        info = data;
+        var ctx = $('#myChart');
+
+        var d = {}
+        for (var i = 0; i < info.length; i++) {
+            if (info[i]["date"] in d) {
+				d[info[i]["date"]] += info[i]["total"]; } else {
+				d[info[i]["date"]] = info[i]["total"]
+                }
+        }
+        labels = $.map(data, function(e) { return e["date"]})
+        data = $.map(data, function(e) { return e["total"]})
+        var myBarChart = new Chart(ctx, {
+            type: 'bar',
+            data: {datasets: [{data: Object.values(d)}], labels: Object.keys(d)},
+        });
     })
-})
+}
