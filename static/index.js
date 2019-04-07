@@ -22,14 +22,6 @@ var schema = {
                         type: "string",
                         title: "Item Name"
                     },
-                    "qty": {
-                        type: "string",
-                        title: "Item Quantiy"
-                    },
-                    "unit_price": {
-                        type: "number",
-                        title: "Unit price"
-                    },
                     "price": {
                         type: "number",
                         title: "Item price"
@@ -94,5 +86,8 @@ $(function() {
         })
 	})
 
-
+    $.get('/get_receipts', function(data) {
+        console.log(data)
+        $("#inner_tbl").html(buildTable(data));
+    })
 })

@@ -3,6 +3,7 @@ import os
 import io
 import re
 import sqlite3
+from datetime import datetime
 from io import BytesIO
 
 from PIL import Image
@@ -10,6 +11,7 @@ from flask import Flask, render_template, request, g, jsonify
 from google.cloud import vision
 from google.cloud.vision import types
 
+from image_processing import pipeline, get_word_items
 from utils import get_fake_json, get_error, get_random_filename
 
 DATABASE = './receipts.db'
@@ -49,10 +51,15 @@ if not os.path.exists(DATABASE):
 def persist_results(receipt_data):
     db = get_db()
 
-    company = receipt_data['company']
-    address = receipt_data['address']
-    total = receipt_data['total']
-    date = receipt_data['date']
+    company = receipt_data.get('company', '')
+    address = receipt_data.get('address', '')
+
+    if 'total' in receipt_data:
+        total = receipt_data['total']
+    else:
+        if len(receipt_data['items']):
+            total = sum([x["price"] for x in receipt_data['items']])
+    date = receipt_data.get('date', datetime.now())
 
     cursor = db.cursor()
     cursor.execute('INSERT INTO Receipts(company, address, total, date) VALUES(?,?,?,?)',
@@ -61,16 +68,12 @@ def persist_results(receipt_data):
     receipt_id = cursor.lastrowid
 
     for item in receipt_data['items']:
-        name = item['name']
-        qty = item['qty']
-        price = item['price']
-        unit_price = item['unit_price']
+        name = item["name"]
+        price = item["price"]
 
-        cursor.execute('INSERT INTO Items(name, qty, unit_price, price) VALUES(?,?,?,?)',
-                       (name, qty, unit_price, price))
+        cursor.execute('INSERT INTO Items(name, price, receipt_id) VALUES(?,?,?)',
+                       (name, price, receipt_id))
         item_id = cursor.lastrowid
-
-        cursor.execute('INSERT INTO ReceiptItems(receipt_id, item_id) VALUES(?,?)', (receipt_id, item_id))
 
     db.commit()
 
@@ -80,74 +83,59 @@ def hello_world():
     return render_template('hello.html')
 
 
-def get_fake_json():
-    content = {
-        'id': 1,
-        'company': 'SC DEDEMAN SRL',
-        'address': 'Calea Aradului NR 87A JUD BIHOR',
-        'items': [
-            {
-                'name': 'CABLU MYYM',
-                'qty': '30 M',
-                'unit_price': 4.09,
-                'price': 122.7
-            },
-            {
-                'name': 'FISA 2P+T',
-                'qty': '1 BUC',
-                'unit_price': 9.59,
-                'price': 9.59
-            },
-            {
-                'name': 'PRIZA MOBILA',
-                'qty': '1 BUC',
-                'unit_price': 16.99,
-                'price': 16.99
-            }
-        ],
-        'total': 149.28,
-        'date': '02-04-2019T14:51:47'
-    }
-
-    return jsonify(content)
-
-
 def get_error(message):
-    return jsonify({
+    return {
         'error_message': message
-    })
+    }
 
 
 @app.route('/upload', methods=['POST'])
 def upload_photo():
-    if request.method == 'POST':
-        image_data = re.sub('^data:image/.+;base64', '', request.form['image'])
+    image_data = re.sub('^data:image/.+;base64', '', request.form['image'])
 
-        buffer = BytesIO(base64.b64decode(image_data))
+    buffer = BytesIO(base64.b64decode(image_data))
 
-        try:
-            im = Image.open(buffer, 'r')
+    im = Image.open(buffer, 'r')
 
-            filename = get_random_filename() + '.jpeg'
-            app.logger.info('saving image to ' + filename)
-            im.save('pictures/' + filename)
+    filename = get_random_filename() + '.jpeg'
+    app.logger.info('saving image to ' + filename)
+    path = os.path.join("pictures", filename)
+    im.save(path)
+    words = pipeline(path)
 
-            # here we make a call to google vision API
-            data = get_fake_json()
+    items = get_word_items(words)
+    items = [{"name": x[0], "price": x[1]} for x in items]
+    data = {"items": items}
+    # insert into DB
+    persist_results(data)
 
-            # insert into DB
-            persist_results(data)
+    return jsonify(data), 200
 
-            with io.open(filename, 'rb') as image_file:
-                content = image_file.read()
+@app.route("/get_receipts")
+def get_data():
+    db = get_db()
 
-            image = types.Image(content=content)
+    cursor = db.cursor()
+    cursor.execute('SELECT id, company, address, total, date FROM Receipts')
+
+    receipts = cursor.fetchall()
+    print(receipts)
+    cursor2 = db.cursor()
+    cursor2.execute('SELECT id, receipt_id, name, price  FROM Items')
+    items = cursor2.fetchall()
+    data = []
+    for receipt in receipts:
+        d = {"id": receipt[0], "company": receipt[1], "address": receipt[2], "total": receipt[3], "date": receipt[4]}
+        its = []
+        for i in items:
+            if i[1] == receipt[0]:
+                its.append({"name": i[2], "price": i[3]})
+        d["items"] = its
+        data.append(d)
+    return jsonify(data)
 
 
-            return jsonify(data), 200
-        except Exception as e:
-            app.logger.error(e)
-            return jsonify(get_error('invalid image')), 500
+
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", debug=True)

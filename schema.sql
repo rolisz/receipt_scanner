@@ -10,18 +10,11 @@ CREATE TABLE IF NOT EXISTS Receipts
 CREATE TABLE IF NOT EXISTS Items
 (
   id         INTEGER PRIMARY KEY AUTOINCREMENT,
+  receipt_id  INTEGER,
   name       VARCHAR(255),
   qty        INTEGER,
   unit_price DOUBLE PRECISION,
-  price      DOUBLE PRECISION
+  price      DOUBLE PRECISION,
+
+  FOREIGN KEY (receipt_id) REFERENCES Receipts(id)
 );
-
-CREATE TABLE ReceiptItems
-(
-  receipt_id INTEGER,
-  item_id    INTEGER,
-
-  PRIMARY KEY (receipt_id, item_id),
-  FOREIGN KEY (receipt_id) REFERENCES Receipts (id),
-  FOREIGN KEY (item_id) REFERENCES Items (id)
-)

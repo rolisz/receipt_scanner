@@ -84,3 +84,35 @@ html, body{
     right: 20px;
     z-index: 2;
 }
+
+#inner_tbl {
+    padding-left: 2px
+}
+
+.td_row_even {
+    padding: 2px;
+    background-color: #F6F4F0
+}
+
+.td_row_odd {
+    padding: 2px;
+    background-color: #FFF
+}
+
+.td_head {
+    padding: 2px;
+    font-weight: 700
+}
+
+input,p,select,td,textarea,th {
+    font-size: 1em
+}
+
+table,td,th {
+    border: 1px solid gray
+}
+
+table {
+
+width: 100%;
+}
