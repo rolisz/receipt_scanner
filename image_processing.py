@@ -1,4 +1,8 @@
+import datetime
 import json
+import re
+
+import dateparser
 import numpy as np
 import matplotlib.pyplot as plt
 from PIL import Image, ImageDraw
@@ -227,21 +231,51 @@ def pipeline(path):
 
 
 def get_word_items(words):
+    is_header = True
     items = []
     prices = []
 
     header_max = 0
-    for i, word in enumerate(words):
+    for i, word in enumerate(words[:9]):
         joined = " ".join(word).lower()
-        if "c.i.f" in joined or "bon" in joined or "fiscal" in joined:
+        if "c.i.f" in joined or "bon" in joined or "fiscal" in joined or "str " in joined or\
+            "bine ati venit" in joined:
             header_max = max(header_max, i)
+
+    company = ""
+    address = ""
+    for word in words[:header_max]:
+        joined = " ".join(word).lower()
+        if re.search('S\.?C\.?(.+?)(S.?R.?L.?)|(S[:.,]?A[:.,]?)', joined, re.IGNORECASE):
+            company = " ".join(word)
+        if "str" in joined or "calea" in joined or "b-dul" in joined or "nr" in joined:
+            address = " ".join(word)
 
     end_min = len(words)
     for i, word in enumerate(words):
         joined = " ".join(word).lower()
-        if "total" in joined or "poziti" in joined:
+        if "total" in joined or "poziti" in joined or "tva" in joined or "numerar" in joined:
             end_min = min(end_min, i)
 
+    data = datetime.date.today().strftime("%Y/%m/%d")
+    time = "00:00"
+    for word in words[end_min:]:
+        joined = " ".join(word).lower()
+        match = re.search('\d{2,4}[.\\-/]\w{3}[.\\-/]\d{2,4}', joined, re.IGNORECASE)
+        if match:
+            data = match.group()
+        match = re.search('\d{2,4}[.\\-/]\d{2,4}[.\\-/]\d{2,4}', joined, re.IGNORECASE)
+        if match:
+            data = match.group()
+        match = re.search('\d{2}:\d{2}(:\d{2})?', joined, re.IGNORECASE)
+        if match:
+            time = match.group()
+
+    date = dateparser.parse(data + " " + time)
+    if date:
+        date = date.strftime("%Y/%m/%d %H:%M")
+    else:
+        date = ""
     for i, word in enumerate(words[header_max + 1:end_min]):
         joined = " ".join(word).lower()
         numbers = sum(c.isdigit() for c in joined)
@@ -257,10 +291,10 @@ def get_word_items(words):
             nrs = [float(x) for x in next_rows if is_float(x)]
             if nrs:
                 price = max(nrs)
-                prices.append((joined, price))
             else:
-                prices.append((joined, -1))
-    return prices
+                price = -1
+            prices.append({"name": " ".join(word), "price": price})
+    return {"company": company, "address": address, "items": prices, "date": date}
 
 
 def is_float(string):

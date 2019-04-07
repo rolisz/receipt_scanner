@@ -54,6 +54,7 @@ def persist_results(receipt_data):
     company = receipt_data.get('company', '')
     address = receipt_data.get('address', '')
 
+    total = 0
     if 'total' in receipt_data:
         total = receipt_data['total']
     else:
@@ -103,9 +104,7 @@ def upload_photo():
     im.save(path)
     words = pipeline(path)
 
-    items = get_word_items(words)
-    items = [{"name": x[0], "price": x[1]} for x in items]
-    data = {"items": items}
+    data = get_word_items(words)
     # insert into DB
     persist_results(data)
 
